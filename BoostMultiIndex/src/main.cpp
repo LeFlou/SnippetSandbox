@@ -51,9 +51,6 @@ using MultiIndexOrderContainer = multi_index_container<PointerType,
     >
 >;
 
-using boost::multi_index_container;
-using namespace boost::multi_index;
-
 int main()
 {
     MultiIndexOrderContainer c;
