@@ -145,7 +145,7 @@ std::vector<PointerType> GetHighestSellingOrder(MultiIndexOrderContainer& c)
     {
         // Get last order
         auto it = c.upper_bound(Way::SELL); // O(log(n))
-        if ((*--it)->way_ == Way::SELL)
+        if (it != c.begin() && (*--it)->way_ == Way::SELL)
         {
             result.push_back(*it);
         }
@@ -236,8 +236,8 @@ int main()
     std::vector<PointerType> sellingOrders
     {
         std::make_shared<OrderType>(Way::SELL, 10, 16, 3),
-        std::make_shared<OrderType>(Way::SELL, 10, 17, 4),
-        std::make_shared<OrderType>(Way::SELL, 10, 18, 5)
+        //std::make_shared<OrderType>(Way::SELL, 10, 17, 4),
+        //std::make_shared<OrderType>(Way::SELL, 10, 18, 5)
     };
 
     for (auto& order : sellingOrders)
@@ -270,50 +270,133 @@ int main()
     //c.insert(std::make_shared<OrderType>(Way::UNDEFINED, 10, 25, 8));
     //c.insert(std::make_shared<OrderType>(Way::UNDEFINED, 10, 10, 10));
 
-    // Pick lowest price from selling orders
-    //auto it = c.lower_bound(Way::SELL);
-    //if (it != c.end())
-    //{
-    //std::cout << **it << std::endl;
-    //}
-
-    auto allBuying = GetAllBuyingOrders(c);
-    assert(allBuying == buyingOrders);
-
-    GetAllSellingOrders(c);
-    GetHighestBuyingOrder(c);
-    GetHighestSellingOrder(c);
-    GetLowestBuyingOrder(c);
-    GetLowestSellingOrder(c);
-    GetBuyingOrdersSortedByTimestamp(c);
-
-    static_assert(Way::UNDEFINED < Way::SELL, "");
-    static_assert(Way::SELL < Way::BUY, "");
-
-    //std::cout << **--c.upper_bound(Way::BUY) << std::endl;
-
-    // Pick highest price from buying orders
-    /*
-    auto buyIt = c.upper_bound(Way::BUY);
-    if (buyIt != c.end())
     {
-        if (--buyIt == c.end()) // is there any buying order ?
+        auto allBuying = GetAllBuyingOrders(c);
+        std::sort(buyingOrders.begin(), buyingOrders.end());
+        std::sort(allBuying.begin(), allBuying.end());
+        assert(allBuying == buyingOrders);
+    }
+
+    {
+        auto allSelling = GetAllSellingOrders(c);
+        std::sort(sellingOrders.begin(), sellingOrders.end());
+        std::sort(allSelling.begin(), allSelling.end());
+        assert(allSelling == sellingOrders);
+    }
+
+    {
+        auto highest = GetHighestBuyingOrder(c);
+        bool noHighest = true;
+        PriceType max{};
+        for (auto order : buyingOrders)
         {
-            std::cout << "lol" << std::endl;
+            if (noHighest)
+            {
+                max = order->price_;
+                noHighest = false;
+            }
+            else if (order->price_ > max)
+            {
+                max = order->price_;
+            }
+        }
+        if (noHighest)
+        {
+            assert(highest.empty());
         }
         else
         {
-            std::cout << **buyIt << std::endl;
+            assert(highest.size() == 1);
+            assert(max == highest[0]->price_);
         }
     }
-    else
-    {
-        std::cout << **--buyIt << std::endl;
-    }
-    */
 
-    int dummy;
-    std::cin >> dummy;
+    {
+        auto highest = GetHighestSellingOrder(c);
+        bool noHighest = true;
+        PriceType max{};
+        for (auto order : sellingOrders)
+        {
+            if (noHighest)
+            {
+                max = order->price_;
+                noHighest = false;
+            }
+            else if (order->price_ > max)
+            {
+                max = order->price_;
+            }
+        }
+        if (noHighest)
+        {
+            assert(highest.empty());
+        }
+        else
+        {
+            assert(highest.size() == 1);
+            assert(max == highest[0]->price_);
+        }
+    }
+
+
+    {
+        auto lowest = GetLowestBuyingOrder(c);
+        bool noLowest = true;
+        PriceType min{};
+        for (auto order : buyingOrders)
+        {
+            if (noLowest)
+            {
+                min = order->price_;
+                noLowest = false;
+            }
+            else if (order->price_ < min)
+            {
+                min = order->price_;
+            }
+        }
+        if (noLowest)
+        {
+            assert(lowest.empty());
+        }
+        else
+        {
+            assert(lowest.size() == 1);
+            assert(min == lowest[0]->price_);
+        }
+    }
+
+    {
+        auto lowest = GetLowestSellingOrder(c);
+        bool noLowest = true;
+        PriceType min{};
+        for (auto order : sellingOrders)
+        {
+            if (noLowest)
+            {
+                min = order->price_;
+                noLowest = false;
+            }
+            else if (order->price_ < min)
+            {
+                min = order->price_;
+            }
+        }
+        if (noLowest)
+        {
+            assert(lowest.empty());
+        }
+        else
+        {
+            assert(lowest.size() == 1);
+            assert(min == lowest[0]->price_);
+        }
+    }
+
+    //GetBuyingOrdersSortedByTimestamp(c);
+
+    static_assert(Way::UNDEFINED < Way::SELL, "");
+    static_assert(Way::SELL < Way::BUY, "");
 
 	return 0;
 }
