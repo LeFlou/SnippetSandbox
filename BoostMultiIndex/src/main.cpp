@@ -5,6 +5,7 @@
 #include <boost/multi_index_container.hpp>
 #include <boost/multi_index/ordered_index.hpp>
 #include <boost/multi_index/composite_key.hpp>
+#include <boost/multi_index/hashed_index.hpp>
 #include <boost/multi_index/identity.hpp>
 #include <boost/multi_index/member.hpp>
 
@@ -30,16 +31,19 @@ struct GenericOrder
     GenericOrder(const GenericOrder&) = delete;
     GenericOrder& operator=(const GenericOrder&) = delete;
 
-    Way way_;
-    QuantityType quantity_;
-    PriceType price_;
+    int orderID_{};
+    Way way_ = Way::UNDEFINED;
+    QuantityType quantity_ {};
+    PriceType price_ {};
     long long timestamp_ = -1;
+
 };
 
 template <typename QuantityType, typename PriceType>
 bool operator==(const GenericOrder<QuantityType, PriceType>& g1, const GenericOrder<QuantityType, PriceType>& g2)
 {
-    return g1.way_ == g2.way_ &&
+    return g1.orderID_ == g2.orderID_ &&
+        g1.way_ == g2.way_ &&
         g1.quantity_ == g2.quantity_ &&
         g1.price_ == g2.price_ &&
         g1.timestamp_ == g2.timestamp_;
@@ -57,13 +61,16 @@ struct price {};
 
 using MultiIndexOrderContainer = multi_index_container<PointerType,
     indexed_by<
-        ordered_non_unique<
-            composite_key<
-                OrderType,
-                member<OrderType, decltype(OrderType::way_), &OrderType::way_>,
-                member<OrderType, decltype(OrderType::price_), &OrderType::price_>,
-                member<OrderType, decltype(OrderType::timestamp_), &OrderType::timestamp_>
+		ordered_non_unique<
+			composite_key<
+				OrderType,
+					member<OrderType, decltype(OrderType::way_), &OrderType::way_>,
+                    member<OrderType, decltype(OrderType::price_), &OrderType::price_>,
+                    member<OrderType, decltype(OrderType::timestamp_), &OrderType::timestamp_>
             >
+        >,
+        hashed_unique<
+			member<OrderType, decltype(OrderType::orderID_), &OrderType::orderID_>
         >
     >
 >;
